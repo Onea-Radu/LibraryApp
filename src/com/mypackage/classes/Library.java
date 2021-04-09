@@ -248,7 +248,7 @@ public class Library {
 
     //endregion
     //region 2
-    public static Map<Integer, Book> getBooksByPopularity() {
+    public static Map<Book, Integer> getBooksByPopularity() {
         Map<Book, Integer> bookCounter = new HashMap<>();
         for (var user : users) {
             for (var cop : user.getRentedBooks()) {
@@ -257,11 +257,8 @@ public class Library {
                 bookCounter.put(copy.getBook(), count);
             }
         }
-        Map<Integer, Book> counter = new TreeMap<>();
-        for (var i : bookCounter.entrySet()) {
-            counter.put(i.getValue(), i.getKey());
-        }
-        return counter;
+
+        return bookCounter;
     }
 
     //endregion
@@ -271,19 +268,16 @@ public class Library {
     }
 
     public static List<User> getUsersByPages(int numberOfUsersToGet) {
+        //sort the array in descending order
         return users.stream()
                 .map(user -> {
                     //get each user with the number of pages he got
                     var numberOfPages = user.getRentedBooks().stream().map(AbstractMap.SimpleEntry::getValue)
                             .map(Book.Copy::getPages).reduce(0, Integer::sum);
-                    return new AbstractMap.SimpleEntry<>(numberOfPages, user);
-                }).sorted(new Comparator<AbstractMap.SimpleEntry<Integer, User>>() {
-                    @Override
-                    //sort the array in descending order
-                    public int compare(AbstractMap.SimpleEntry<Integer, User> o1, AbstractMap.SimpleEntry<Integer, User> o2) {
-                        return -Integer.compare(o1.getKey(), o2.getKey());
-                    }
-                }).map(AbstractMap.SimpleEntry::getValue)
+                    return new AbstractMap.SimpleEntry<>(user, numberOfPages);
+                }).sorted(
+                        (o1, o2) -> -Integer.compare(o1.getValue(), o2.getValue()))
+                .map(AbstractMap.SimpleEntry::getKey)
                 .limit(numberOfUsersToGet)
                 .collect(Collectors.toList());
         //get the users and limit it to the requested number of users
