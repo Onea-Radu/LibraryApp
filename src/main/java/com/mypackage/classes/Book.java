@@ -1,5 +1,6 @@
 package com.mypackage.classes;
 
+import com.opencsv.bean.CsvBindByName;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,6 @@ public class Book implements Comparable<Book> {
     @Override
     public String toString() {
         return "{Book " + name + " by " + author.getName() + "}";
-
     }
 
     Book(@NotNull String name, @NotNull Author author, Section section) {

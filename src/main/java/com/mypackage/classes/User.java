@@ -1,10 +1,14 @@
 package com.mypackage.classes;
 
+import com.opencsv.bean.CsvBindByName;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class User extends Person {
+    @CsvBindByName
     private String email;
+    @CsvBindByName
     private String phoneNumber;
     private final List<AbstractMap.SimpleEntry<LocalDateTime, Book.Copy>> rentedBooks;
     private final List<Book.Copy> nowRentedBooks;
@@ -17,7 +21,7 @@ public class User extends Person {
         return Collections.unmodifiableList(nowRentedBooks);
     }
 
-    User(String name, String email, String phoneNumber) {
+    public User(String email, String name, String phoneNumber) {
         super(name);
         this.email = email;
         this.phoneNumber = phoneNumber;

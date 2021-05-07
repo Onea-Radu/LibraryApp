@@ -1,6 +1,9 @@
 package com.mypackage.classes;
 
+import com.opencsv.bean.CsvBindByName;
+
 public abstract class Person implements Comparable<Person> {
+    @CsvBindByName
     protected String name;
 
     Person(String name) {

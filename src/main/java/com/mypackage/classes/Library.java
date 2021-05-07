@@ -1,7 +1,9 @@
 package com.mypackage.classes;
 
-import com.mypackage.classes.*;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -10,22 +12,29 @@ import java.util.stream.Stream;
 
 public class Library {
     //region Attributes
-    final static private Set<Author> authors;
-    final static private Set<User> users;
-    final static private Set<Section> sections;
-    final static private Set<Genre> genres;
+    static private Set<Author> authors = new TreeSet();
+    static private Set<User> users = new TreeSet();
+    static private Set<Section> sections = new TreeSet();
+    static private Set<Genre> genres = new TreeSet();
     final static private Set<Book> books;
-    final static private Set<Redaction> redactions;
+    static private Set<Redaction> redactions = new TreeSet();
     final static private Pattern patternEmail;
     final static private Pattern patternPhone;
 
     static {
-        authors = new TreeSet<>();
-        users = new TreeSet<>();
-        sections = new TreeSet<>();
-        genres = new TreeSet<>();
+        try {
+            authors = (new Provider<Author>()).getInstance(Author.class).Read();
+            sections = (new Provider<Section>()).getInstance(Section.class).Read();
+
+
+            genres = (new Provider<Genre>()).getInstance(Genre.class).Read();
+            redactions = (new Provider<Redaction>()).getInstance(Redaction.class).Read();
+
+            users = (new Provider<User>()).getInstance(User.class).Read();
+        } catch (Exception ignored) {
+            System.out.println(ignored.getMessage());
+        }
         books = new TreeSet<>();
-        redactions = new TreeSet<>();
         String regexEmail = "^(.+)@(.+)$";
         patternEmail = Pattern.compile(regexEmail);
         patternPhone = Pattern.compile("^\\d{10}$");
@@ -40,14 +49,16 @@ public class Library {
             return Collections.unmodifiableSet(users);
         }
 
-
         private static boolean verifyCredential(String email, String phoneNumber) {
             return patternPhone.matcher(phoneNumber).matches() && patternEmail.matcher(email).matches();
         }
 
-        public static void addUser(String name, String email, String phoneNumber) {
-            if (getUser(email) == null && verifyCredential(email, phoneNumber))
+        public static void addUser(String name, String email, String phoneNumber) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+            if (getUser(email) == null && verifyCredential(email, phoneNumber)) {
                 users.add(new User(name, email, phoneNumber));
+                var j = (new Provider<User>()).getInstance(User.class);
+                j.Update(users);
+            }
         }
 
         public static User getUser(String email) {
@@ -57,13 +68,15 @@ public class Library {
             return opt.orElse(null);
         }
 
-        public static void removeUser(String email) {
+        public static void removeUser(String email) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             var user = getUser(email);
             removeUser(user);
         }
 
-        public static void removeUser(User user) {
+        public static void removeUser(User user) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             users.remove(user);
+            var j = (new Provider<User>()).getInstance(User.class);
+            j.Update(users);
         }
     }
 
@@ -74,9 +87,13 @@ public class Library {
             return Collections.unmodifiableSet(authors);
         }
 
-        public static void addAuthor(String name) {
-            if (getAuthor(name) == null)
+        public static void addAuthor(String name) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+            if (getAuthor(name) == null) {
                 authors.add(new Author(name));
+                var j = (new Provider<Author>()).getInstance(Author.class);
+                j.Update(authors);
+            }
+
         }
 
         public static Author getAuthor(String authorName) {
@@ -86,16 +103,19 @@ public class Library {
             return opt.orElse(null);
         }
 
-        public static void removeAuthor(String authorName) {
+        public static void removeAuthor(String authorName) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             var author = getAuthor(authorName);
             removeAuthor(author);
+
         }
 
-        public static void removeAuthor(Author author) {
+        public static void removeAuthor(Author author) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             authors.remove(author);
             for (var i : author.getBooksWrote()) {
                 BookStore.removeBook(i);
             }
+            var j = (new Provider<Author>()).getInstance(Author.class);
+            j.Update(authors);
         }
     }
 
@@ -106,10 +126,13 @@ public class Library {
             return Collections.unmodifiableSet(sections);
         }
 
-        public static void addSection(String name) {
+        public static void addSection(String name) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
 
-            if (getSection(name) == null)
+            if (getSection(name) == null) {
                 sections.add(new Section(name));
+                var j = (new Provider<Section>()).getInstance(Section.class);
+                j.Update(sections);
+            }
         }
 
         public static Section getSection(String sectionName) {
@@ -119,15 +142,17 @@ public class Library {
             return opt.orElse(null);
         }
 
-        public static void removeSection(Section section) {
+        public static void removeSection(Section section) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             sections.remove(section);
             for (var i : books) {
                 if (i.getSection().equals(section))
                     i.setSection(null);
             }
+            var j = (new Provider<Section>()).getInstance(Section.class);
+            j.Update(sections);
         }
 
-        public static void removeSection(String sectionName) {
+        public static void removeSection(String sectionName) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             var section = getSection(sectionName);
             removeSection(section);
         }
@@ -140,9 +165,12 @@ public class Library {
             return Collections.unmodifiableSet(genres);
         }
 
-        public static void addGenre(String name) {
-            if (getGenre(name) == null)
+        public static void addGenre(String name) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+            if (getGenre(name) == null) {
                 genres.add(new Genre(name));
+                var j = (new Provider<Genre>()).getInstance(Genre.class);
+                j.Update(genres);
+            }
         }
 
         public static Genre getGenre(String genreName) {
@@ -152,15 +180,17 @@ public class Library {
             return opt.orElse(null);
         }
 
-        public static void removeGenre(Genre genre) {
+        public static void removeGenre(Genre genre) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             genres.remove(genre);
             for (var i : books) {
                 if (i.hasGenre(genre))
                     i.removeGenre(genre);
             }
+            var j = (new Provider<Genre>()).getInstance(Genre.class);
+            j.Update(genres);
         }
 
-        public static void removeGenre(String genreName) {
+        public static void removeGenre(String genreName) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
             var genre = getGenre(genreName);
             removeGenre(genre);
         }
@@ -174,8 +204,10 @@ public class Library {
         }
 
         public static void addBook(String name, Author author, Section section) {
-            if (getBook(name) == null)
+            if (getBook(name) == null) {
                 books.add(new Book(name, author, section));
+
+            }
         }
 
         public static Book getBook(String bookName) {
@@ -191,10 +223,12 @@ public class Library {
 
         public static void removeBook(String bookName) {
             var book = getBook(bookName);
-            removeBook(book);
+
         }
     }
+
     //endregion
+
     //region Redactions
 
     //Only the redaction will not be able to be deleted, they can be renamed but never deleted
@@ -207,9 +241,12 @@ public class Library {
             return Collections.unmodifiableSet(redactions);
         }
 
-        public static void addRedaction(String name) {
-            if (getRedaction(name) == null)
+        public static void addRedaction(String name) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+            if (getRedaction(name) == null) {
                 redactions.add(new Redaction(name));
+                var j = (new Provider<Redaction>()).getInstance(Redaction.class);
+                j.Update(redactions);
+            }
         }
 
         public static Redaction getRedaction(String redactionName) {
@@ -237,7 +274,12 @@ public class Library {
      */
 
     //region 1
-    public static List<User> getUsersWithDues() {
+    public static List<User> getUsersWithDues() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         return users.stream().filter(user -> {
             for (var i : user.getNowRentedBooks())
                 if (i.isDue())
@@ -248,7 +290,12 @@ public class Library {
 
     //endregion
     //region 2
-    public static Map<Book, Integer> getBooksByPopularity() {
+    public static Map<Book, Integer> getBooksByPopularity() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Book, Integer> bookCounter = new HashMap<>();
         for (var user : users) {
             for (var cop : user.getRentedBooks()) {
@@ -263,12 +310,17 @@ public class Library {
 
     //endregion
     //region 3
-    public static List<User> getUsersByPages() {
+    public static List<User> getUsersByPages() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         return getUsersByPages(users.size());
     }
 
-    public static List<User> getUsersByPages(int numberOfUsersToGet) {
+    public static List<User> getUsersByPages(int numberOfUsersToGet) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         //sort the array in descending order
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         return users.stream()
                 .map(user -> {
                     //get each user with the number of pages he got
@@ -285,11 +337,16 @@ public class Library {
 
     //endregion
     //region 4
-    public static List<Author> getMostPopularAuthors() {
+    public static List<Author> getMostPopularAuthors() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         return getMostPopularAuthors(authors.size());
     }
 
-    public static List<Author> getMostPopularAuthors(int numberOfAuthorsToGet) {
+    public static List<Author> getMostPopularAuthors(int numberOfAuthorsToGet) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Author, Integer> authorCounter = new HashMap<>();
         for (var user : users) {
             for (var cop : user.getRentedBooks()) {
@@ -309,12 +366,17 @@ public class Library {
 
     //endregion
     //region 5
-    public static List<Section> getMostPopularSections() {
+    public static List<Section> getMostPopularSections() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         return getMostPopularSections(sections.size());
 
     }
 
-    public static List<Section> getMostPopularSections(int numberOfSectionsToGet) {
+    public static List<Section> getMostPopularSections(int numberOfSectionsToGet) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Section, Integer> sectionCounter = new HashMap<>();
         for (var user : users) {
             for (var cop : user.getRentedBooks()) {
@@ -335,11 +397,16 @@ public class Library {
 
     //endregion
     //region 6
-    public static List<Redaction> getMostPopularRedactions() {
+    public static List<Redaction> getMostPopularRedactions() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         return getMostPopularRedactions(redactions.size());
     }
 
-    public static List<Redaction> getMostPopularRedactions(int numberOfRedactionsToGet) {
+    public static List<Redaction> getMostPopularRedactions(int numberOfRedactionsToGet) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Redaction, Integer> redactionCounter = new HashMap<>();
         for (var user : users) {
             for (var cop : user.getRentedBooks()) {
@@ -359,11 +426,16 @@ public class Library {
 
     //endregion
     //region 7
-    public static List<Genre> getMostPopularGenres() {
+    public static List<Genre> getMostPopularGenres() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
         return getMostPopularGenres(genres.size());
     }
 
-    public static List<Genre> getMostPopularGenres(int numberOfGenresToGet) {
+    public static List<Genre> getMostPopularGenres(int numberOfGenresToGet) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Genre, Integer> genreCounter = new HashMap<>();
         for (var user : users) {
             for (var copy : user.getRentedBooks()) {
@@ -384,7 +456,12 @@ public class Library {
 
     //endregion
     //region 8
-    public static Map<Genre, Integer> getNumberOfCopiesByGenre() {
+    public static Map<Genre, Integer> getNumberOfCopiesByGenre() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Genre, Integer> genreCounter = new HashMap<>();
         for (var book : books) {
             for (Genre genre : book.getGenres()) {
@@ -397,13 +474,23 @@ public class Library {
 
     //endregion
     //region 9
-    public static List<Person> getEveryHuman() {
+    public static List<Person> getEveryHuman() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         return Stream.concat(authors.stream(), users.stream()).sorted().collect(Collectors.toList());
     }
 
     //endregion
     //region 10
-    public static Map<Status, Integer> countByStatus() {
+    public static Map<Status, Integer> countByStatus() throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+        StackWalker walker = StackWalker.getInstance();
+        Optional<String> methodName = walker.walk(frames -> frames
+                .findFirst()
+                .map(StackWalker.StackFrame::getMethodName));
+        Provider.Audit.Write(methodName.get());
         Map<Status, Integer> statusCounter = new HashMap<>();
         //Any unusable copy is discarded so of course it will be 0
         var numberOfStatusesWeCareOf = Status.getValues().size() - 1;

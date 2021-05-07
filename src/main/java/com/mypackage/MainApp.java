@@ -1,15 +1,19 @@
 package com.mypackage;
 
-import com.mypackage.classes.Author;
-import com.mypackage.classes.Book;
-import com.mypackage.classes.Redaction;
-import com.mypackage.classes.Section;
-import com.mypackage.classes.Library;
+import com.mypackage.classes.*;
 import com.mypackage.classes.Library.*;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import java.io.IOException;
 
 
 public class MainApp {
-    public static void main(String[] args) {
+
+    public static void main(String[] args) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
+
+        
+        UserStore.addUser("Radu", "onearadu12@gmail.com", "0722460830");
         SectionStore.addSection("Literature");
         SectionStore.addSection("Philosophy");
         SectionStore.addSection("Computer Science");
@@ -34,20 +38,17 @@ public class MainApp {
                 .addGenre(GenreStore.getGenre("Existentialism"));
         BookStore.getBook("Crime and Punishment")
                 .addGenre(GenreStore.getGenre("Realism"));
-
-
         BookStore.getBook("Thus Spake Zarathustra")
                 .makeCopy(126, RedactionStore.getRedaction("Paralela45"));
         BookStore.getBook("Thus Spake Zarathustra")
                 .makeCopy(126, RedactionStore.getRedaction("Paralela45")).damage();
+        System.out.println(UserStore.getUser("onearadu12@gmail.com").rent(BookStore.getBook("Thus Spake Zarathustra")));
+        System.out.println(UserStore.getUser("onearadu12@gmail.com").rent(BookStore.getBook("Crime and Punishment")));
         var h = BookStore.getBook("Crime and Punishment")
                 .makeCopy(126, RedactionStore.getRedaction("Nemira"));
         h.damage();
         h.damage();
         h.damage();
-        UserStore.addUser("Radu", "onearadu12@gmail.com", "0722460830");
-        System.out.println(UserStore.getUser("onearadu12@gmail.com").rent(BookStore.getBook("Thus Spake Zarathustra")));
-        System.out.println(UserStore.getUser("onearadu12@gmail.com").rent(BookStore.getBook("Crime and Punishment")));
         System.out.println(Library.countByStatus());
         System.out.println(Library.getEveryHuman());
         System.out.println(Library.getBooksByPopularity());

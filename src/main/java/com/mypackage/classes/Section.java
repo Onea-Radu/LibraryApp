@@ -1,7 +1,10 @@
 package com.mypackage.classes;
 
+import com.opencsv.bean.CsvBindByName;
+
 public class Section implements Comparable<Section> {
-    String name;
+    @CsvBindByName
+    private String name;
 
     public String getName() {
         return name;
@@ -11,7 +14,8 @@ public class Section implements Comparable<Section> {
         this.name = name;
     }
 
-    Section(String name) {
+
+    public Section(String name) {
         this.name = name;
     }
 

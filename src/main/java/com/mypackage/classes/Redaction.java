@@ -1,8 +1,14 @@
 package com.mypackage.classes;
 
+import com.opencsv.bean.CsvBindByName;
 
-public class Genre implements Comparable<Genre> {
+public class Redaction implements Comparable<Redaction> {
+    @CsvBindByName
     private String name;
+
+    public Redaction(String name) {
+        this.name = name;
+    }
 
     public String getName() {
         return name;
@@ -12,19 +18,15 @@ public class Genre implements Comparable<Genre> {
         this.name = name;
     }
 
-    Genre(String name) {
-        this.name = name;
-    }
-
     @Override
     public String toString() {
-        return "Genre{" +
+        return "Redaction{" +
                 "name='" + name + '\'' +
                 '}';
     }
 
     @Override
-    public int compareTo(Genre o) {
+    public int compareTo(Redaction o) {
         return this.getName().compareTo(o.getName());
     }
 }
