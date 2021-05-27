@@ -6,12 +6,12 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 
 public class MainApp {
 
-    public static void main(String[] args) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException {
-
+    public static void main(String[] args) throws CsvRequiredFieldEmptyException, IOException, CsvDataTypeMismatchException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         
         UserStore.addUser("Radu", "onearadu12@gmail.com", "0722460830");
         SectionStore.addSection("Literature");
